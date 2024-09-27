@@ -1,0 +1,173 @@
+Processeur 16 bits
+
+Objectifs :
+  * Architecture Von Neurman
+  * RISC-V inspiré (fortement) CPU
+  * 16 registres à usage général
+  * Instructions en 2 cycle
+  * Écran 128x128 couleurs
+  * TTY de 48x24 caractères
+  * memory banking
+
+Specs :
+  * Architechture Von Neurman
+  * ISA RISC et instructions exécutés en 1 cycle
+  * 16 bits data/address bus
+  * 39 Kio d'espace mémoire (intructions + données)
+  * Stack de 4 Kio soit 2 Kiw
+  * Jusqu'a 1019 ports I/O 8 bits (compatible 16 bits)
+
+Différences avec la v1 :
+  * Augmentation du nombre possible d'opcodes
+  * Augmentation du nombre possible d'opérations dans l'ALU (8 -> 16)
+  * Modification du format de certaines instructions
+  * Fusion de la mémoire d'instruction et de données
+  * Ajout des opérations suivantes : 'LB', 'SB', 'POP', 'PUSH', 'NOT', 'MUL', 'DIV', 'MOD', 'LSH', 'RSH', 'MULI', 'DIVI', 'MODI', 'LSHI', RSHI', 'BR', 'BLT', 'BLU'
+  * Changement des instructions suivantes : 'LUI' => 'LI', 'JLR', *'ALU'
+  * Changement de l'agencement des registres
+  * Retrait des instructions suivantes : 'BEQ', 'BGT'
+  * Utilisation d'un langage assembleur inspiré de NASM
+
+
+Registres :                       ref   
+GP :
+  r0 :      zero                  zero    Zéro, lecture seule
+  r1-r5 :   arguments             a0-a4   Arguments et valeurs de retour
+  r6-r10 :  saved registers^      s0-s4   Registres sauvegardés
+  r11-12 :  temporary             t0-t1   Valeurs temporaires ; utilisés par les pseudos-instructions
+  r13 :     return address^       ra      Addresse de retour lors de l'appel d'une subroutine
+  r14 :     frame pointer         fp      Stack pointer
+  r15 :     stack pointer         sp      Return stack pointer
+    ^: Sauvegardés lors de l'appel d'une subroutine
+
+Spéciaux :
+  s0 :      flags                 fl      Contient (LSB->MSB) : zero_status, lt, lt_u, carry
+  s1 :      accumulator           acc     Contient la seconde sortie de l'ALU si il y en a une
+  s2 :      instruction pointer   ip      Pointe vers l'instruction actuelle
+  s3 :      memory split          ms      Indique l'adresse mémoire qui sépare la mémoire d'instruction et celle des données.
+  s4 :      bank select           bs      Choisis la bank mémoire
+
+Memory bank :
+  x0 :      video memory
+  x1 :      cartridge ROM
+
+Instructions : 36 opérations différentes
+Format des instructions :
+    16      12      8       4       0
+  U [  im4  |  rs1  |   rd  |   op  ]   IIII1111DDDDOOOO  01XX
+  R [       |  rs1  |   rd  |   op  ]   00001111DDDDOOOO  001X
+  O [  im4  |  rs1  |  fn4  |   op  ]   IIII1111FFFFOOOO  0001
+  B [ im7:4 |  rs1  | im3:0 |   op  ]   IIII1111IIIIOOOO  
+  A [  rs2  |  rs1  |  fn4  |   op  ]   22221111FFFFOOOO  0000
+  S [  fn4  |  rs1  |   rd  |   op  ]   FFFF1111DDDDOOOO  1000
+
+Mémoire :
+x4 ;  LB    rd, imm4(rs1)    ; U ; rd ← m16(rs1 + imm4)     ; b[imm4][rs1][rd]0100
+x6 ;  LW    rd, imm4(rs1)    ; U ; rd ← m16(rs1 + imm4)     ; b[imm4][rs1][rd]0110
+x5 ;  SB    imm4(rs1), rs2   ; U ; m16(rs1 + imm4) ← rs2    ; b[imm4][rs1][rd]0101
+x7 ;  SW    imm4(rs1), rs2   ; U ; m16(rs1 + imm4) ← rs2    ; b[imm4][rs1][rd]0111
+
+Registres :
+x2 ;  LN   rd         ; R ; rd ← pc+2, pc ← pc+4 ; b0000[zero][rd]0010
+x3 ;  MOV  rd, rs1    ; R ; rd ← rs1             ; b0000[rs1][rd]0011
+x8[x2] ;  POP  rd      ; S ; rd ← m16(sp-2)      ; b0010[zero][rd]1000
+x8[x3] ;  PUSH rs1     ; S ; m16(sp) ← rs1       ; b0000[rs1][zero]1000
+
+Arithmétique/Logique : zs est rechargé à chaque opération
+x0[x0] ;  ADD   rs1, rs2     ; A ; rs1 ← rs1 + rs2     ; b[rs2][rs1]0000|0000
+x0[x1] ;  SUB   rs1, rs2     ; A ; rs1 ← rs1 - rs2     ; b[rs2][rs1]0001|0000
+x0[x2] ;  MUL   rs1, rs2     ; A ; rs1 ← rs1 * rs2     ; b[rs2][rs1]0010|0000
+x0[x3] ;  DIV   rs1, rs2     ; A ; rs1 ← rs1 // rs2    ; b[rs2][rs1]0011|0000
+x0[x4] ;  MOD   rs1, rs2     ; A ; rs1 ← rs1 % rs2     ; b[rs2][rs1]0100|0000
+x0[x5] ;  AND   rs1, rs2     ; A ; rs1 ← rs1 & rs2     ; b[rs2][rs1]0101|0000
+x0[x6] ;  OR    rs1, rs2     ; A ; rs1 ← rs1 | rs2     ; b[rs2][rs1]0110|0000
+x0[x7] ;  XOR   rs1, rs2     ; A ; rs1 ← rs1 ^ rs2     ; b[rs2][rs1]0111|0000
+x0[x8] ;  NOT   rs1          ; A ; rs1 ← ~ rs1         ; b[zero][rs1]1000|0000
+x0[x9] ;  LSH   rs1, rs2     ; A ; rs1 ← rs1 << rs2    ; b[rs2][rs1]1001|0000
+x0[xA] ;  RSH   rs1, rs2     ; A ; rs1 ← rs1 >> rs2    ; b[rs2][rs1]1010|0000
+x0[xF] ;  CMP   rs1, rs2     ; A ; reload flags only   ; b[rs2][rs1]1111|0000
+x1[x0] ;  ADDI  rs1, imm4    ; O ; rs1 ← rs1 + imm4    ; b[imm4][rs1]0000|0001
+x1[x1] ;  SUBI  rs1, imm4    ; O ; rs1 ← rs1 - imm4    ; b[imm4][rs1]0001|0001
+x1[x2] ;  MULI  rs1, imm4    ; A ; rs1 ← rs1 * imm4    ; b[imm4][rs1]0010|0001
+X1[x3] ;  DIVI  rs1, imm4    ; A ; rs1 ← rs1 // imm4   ; b[imm4][rs1]0011|0001
+X1[x4] ;  MODI  rs1, imm4    ; A ; rs1 ← rs1 % imm4    ; b[imm4][rs1]0100|0001
+x1[x5] ;  ANDI  rs1, imm4    ; O ; rs1 ← rs1 & imm4    ; b[imm4][rs1]0101|0001
+x1[x6] ;  ORI   rs1, imm4    ; O ; rs1 ← rs1 | imm4    ; b[imm4][rs1]0110|0001
+x1[x7] ;  XORI  rs1, imm4    ; O ; rs1 ← rs1 ^ imm4    ; b[imm4][rs1]0111|0001
+x1[x9] ;  LSHI  rs1, imm4    ; O ; rs1 ← rs1 << imm4   ; b[imm4][rs1]1001|0001
+x1[xA] ;  RSHI  rs1, imm4    ; O ; rs1 ← rs1 >> imm4   ; b[imm4][rs1]1010|0001
+x1[xF] ;  CMPI  rs1, imm4    ; O ; reload flags only   ; b[imm4][rs1]1111|0001
+
+Branchage :
+xA ;  BR    imm(rs1)         ; B ; pc ← rs1 + imm               ; b[im8:5][rs1][im4:0]1010
+xB ;  BLT   imm(rs1)         ; B ; if lt: pc ← rs1 + imm        ; b[im8:5][rs1][im4:0]1011
+xC ;  BLU   imm(rs1)         ; B ; if lt_u: pc ← rs1 + imm      ; b[im8:5][rs1][im4:0]1100
+xD ;  BNZ   imm(rs1)         ; B ; if !zf: pc ← rs1 + imm       ; b[im8:5][rs1][im4:0]1101
+xE ;  JMP   imm(rs1)         ; B ; pc ← pc + imm                ; b[im8:5][zero][im4:0]1110
+xF ;  JLR   imm(rs1)         ; B ; ra ← pc + 2, pc ← pc + imm   ; b[im8:5][zero][im4:0]1111
+
+Non utilisé : x9
+
+Mémoire :
+Map mémoire :
+    x0..x03FF     : microcode                        (1024o/512i)
+    0000 0000 0000 0000 - 0000 0011 1111 1111
+    x0400..x99FF : Memory                            (39936o)
+    0000 0100 0000 0000 - 1001 1001 1111 1111
+    x9A00..x9A02 : Instruction pointer               (2o/16b)  [reg]
+    1001 1010 0000 0000 - 
+    x9A03..x9A04 : Memory split                      (2o/16b)  [reg]
+    x9A05..x9FFF : Unused                            (1020o)   [I/O]
+                        - 1001 1111 1111 1111
+    xA000..xEFFF : Video memory                      (16384o)
+    1010 0000 0000 0000 - 1110 1111 1111 1111
+    xF000..xFFFF : Stack                             (4096o/2048w)
+    1111 0000 0000 0000 - 1111 1111 1111 1111
+
+Macros :
+
+Branchage :
+%macro jmp 1
+  ; %1: rs1
+  sw 0(%1), x5402
+%endmacro
+
+%macro jpi 1
+  ; %1: imm16
+  ldi t0, %1
+  sw 0(t0), x5402
+%endmacro
+
+%macro call 1
+  ; %1: rs1
+  ; save current registers
+  push ra
+  push s0
+  push s1
+  push s2
+  push s3
+  push s4
+  ; push frame pointer
+  push fp
+  ; set frame pointer to stack pointer
+  mv fp, sp
+  ; jump to subroutine
+  jlr 0(%1)
+%endmacro
+
+%macro ret 0
+  ; Put sp at the top of the caller stack frame
+  mv sp, fp
+  ; Load old registers
+  pop fp
+  pop s4
+  pop s3
+  pop s2
+  pop s1
+  pop s0
+  pop ra
+  ; Jump back to caller
+  jmp ra
+%endmacro
+
+
