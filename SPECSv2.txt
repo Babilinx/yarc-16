@@ -55,6 +55,7 @@ Instructions : 36 opérations différentes
 Format des instructions :
     16      12      8       4       0
   U [  im4  |  rs1  |   rd  |   op  ]   IIII1111DDDDOOOO  01XX
+  Q [  rs2  |  rs1  |  imm  |   op  ]
   R [       |  rs1  |   rd  |   op  ]   00001111DDDDOOOO  001X
   O [  im4  |  rs1  |  fn4  |   op  ]   IIII1111FFFFOOOO  0001
   B [ im7:4 |  rs1  | im3:0 |   op  ]   IIII1111IIIIOOOO  
@@ -64,8 +65,8 @@ Format des instructions :
 Mémoire :
 x4 ;  LB    rd, imm4(rs1)    ; U ; rd ← m16(rs1 + imm4)     ; b[imm4][rs1][rd]0100
 x6 ;  LW    rd, imm4(rs1)    ; U ; rd ← m16(rs1 + imm4)     ; b[imm4][rs1][rd]0110
-x5 ;  SB    imm4(rs1), rs2   ; U ; m16(rs1 + imm4) ← rs2    ; b[imm4][rs1][rd]0101
-x7 ;  SW    imm4(rs1), rs2   ; U ; m16(rs1 + imm4) ← rs2    ; b[imm4][rs1][rd]0111
+x5 ;  SB    imm4(rs1), rs2   ; Q ; m16(rs1 + imm4) ← rs2    ; b[rs2][rs1][imm]0101
+x7 ;  SW    imm4(rs1), rs2   ; Q ; m16(rs1 + imm4) ← rs2    ; b[rs2][rs1][imm]0111
 
 Registres :
 x2 ;  LN   rd         ; R ; rd ← pc+2, pc ← pc+4 ; b0000[zero][rd]0010
