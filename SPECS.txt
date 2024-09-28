@@ -69,8 +69,6 @@ x7 ;  SW    imm4(rs1), rs2   ; Q ; m16(rs1 + imm4) ← rs2    ; b[rs2][rs1][imm]
 Registres :
 x2 ;  LN   rd         ; R ; rd ← pc+2, pc ← pc+4 ; b0000[zero][rd]0010
 x3 ;  MOV  rd, rs1    ; R ; rd ← rs1             ; b0000[rs1][rd]0011
-x8[x2] ;  POP  rd      ; S ; rd ← m16(sp-2)      ; b0010[zero][rd]1000
-x8[x3] ;  PUSH rs1     ; S ; m16(sp) ← rs1       ; b0000[rs1][zero]1000
 
 Arithmétique/Logique : zs est rechargé à chaque opération
 x0[x0] ;  ADD   rs1, rs2     ; A ; rs1 ← rs1 + rs2     ; b[rs2][rs1]0000|0000
@@ -105,7 +103,7 @@ xD ;  BNZ   imm(rs1)         ; B ; if !zf: pc ← rs1 + imm       ; b[im8:5][rs1
 xE ;  JMP   imm              ; B ; pc ← pc + imm                ; b[im8:5][zero][im4:0]1110
 xF ;  JLR   imm              ; B ; ra ← pc + 2, pc ← pc + imm   ; b[im8:5][zero][im4:0]1111
 
-Non utilisé : x9
+Non utilisé : x8, x9
 
 Mémoire :
 Map mémoire :
@@ -122,51 +120,4 @@ Map mémoire :
     1010 0000 0000 0000 - 1110 1111 1111 1111
     xF000..xFFFF : Stack                             (4096o/2048w)
     1111 0000 0000 0000 - 1111 1111 1111 1111
-
-Macros :
-
-Branchage :
-%macro jmp 1
-  ; %1: rs1
-  sw 0(%1), x5402
-%endmacro
-
-%macro jpi 1
-  ; %1: imm16
-  ldi t0, %1
-  sw 0(t0), x5402
-%endmacro
-
-%macro call 1
-  ; %1: rs1
-  ; save current registers
-  push ra
-  push s0
-  push s1
-  push s2
-  push s3
-  push s4
-  ; push frame pointer
-  push fp
-  ; set frame pointer to stack pointer
-  mv fp, sp
-  ; jump to subroutine
-  jlr 0(%1)
-%endmacro
-
-%macro ret 0
-  ; Put sp at the top of the caller stack frame
-  mv sp, fp
-  ; Load old registers
-  pop fp
-  pop s4
-  pop s3
-  pop s2
-  pop s1
-  pop s0
-  pop ra
-  ; Jump back to caller
-  jmp ra
-%endmacro
-
 
