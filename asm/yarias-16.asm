@@ -73,12 +73,12 @@
     mov {rd: reg}, {rs1: reg} => 0x0 @ rs1 @ rd @ 0x3
     
     ; branching
-    br  {imm: s8}({rs1: reg}) => imm[15:8] @ rs1 @ imm[7:0] @ 0xA
-    blt {imm: s8}({rs1: reg}) => imm[15:8] @ rs1 @ imm[7:0] @ 0xB
-    blu {imm: s8}({rs1: reg}) => imm[15:8] @ rs1 @ imm[7:0] @ 0xC
-    bnz {imm: s8}({rs1: reg}) => imm[15:8] @ rs1 @ imm[7:0] @ 0xD
-    jmp {imm: s8}({rs1: reg}) => imm[15:8] @ rs1 @ imm[7:0] @ 0xE
-    jlr {imm: s8}({rs1: reg}) => imm[15:8] @ rs1 @ imm[7:0] @ 0xF
+    br  {imm: s8}({rs1: reg}) => imm[7:4] @ rs1 @ imm[3:0] @ 0xA
+    blt {imm: s8}({rs1: reg}) => imm[7:4] @ rs1 @ imm[3:0] @ 0xB
+    blu {imm: s8}({rs1: reg}) => imm[7:4] @ rs1 @ imm[3:0] @ 0xC
+    bnz {imm: s8}({rs1: reg}) => imm[7:4] @ rs1 @ imm[3:0] @ 0xD
+    jmp {imm: s8}({rs1: reg}) => imm[7:4] @ rs1 @ imm[3:0] @ 0xE
+    jlr {imm: s8}({rs1: reg}) => imm[7:4] @ rs1 @ imm[3:0] @ 0xF
 }
 
 #ruledef
