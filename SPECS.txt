@@ -2,7 +2,7 @@ Processeur 16 bits
 
 Objectifs :
   * Architecture Von Neurman
-  * RISC-V inspiré (fortement) CPU
+  * RISC-V inspiré (fortement)
   * 16 registres à usage général
   * Instructions en 2 cycle
   * Écran 128x128 couleurs
@@ -11,7 +11,7 @@ Objectifs :
 
 Specs :
   * Architechture Von Neurman
-  * ISA RISC et instructions exécutés en 1 cycle
+  * ISA RISC et instructions exécutés en 2 cycles
   * 16 bits data/address bus
   * 39 Kio d'espace mémoire (intructions + données)
   * Stack de 4 Kio soit 2 Kiw
@@ -26,26 +26,24 @@ Différences avec la v1 :
   * Changement des instructions suivantes : 'LUI' => 'LI', 'JLR', *'ALU'
   * Changement de l'agencement des registres
   * Retrait des instructions suivantes : 'BEQ', 'BGT'
-  * Utilisation d'un langage assembleur inspiré de NASM
 
 
-Registres :                       ref   
+Registres :                       ref     saver
 GP :
-  r0 :      zero                  zero    Zéro, lecture seule
-  r1-r5 :   arguments             a0-a4   Arguments et valeurs de retour
-  r6-r10 :  saved registers^      s0-s4   Registres sauvegardés
-  r11-12 :  temporary             t0-t1   Valeurs temporaires ; utilisés par les pseudos-instructions
-  r13 :     return address^       ra      Addresse de retour lors de l'appel d'une subroutine
-  r14 :     frame pointer         fp      Frame pointer
-  r15 :     stack pointer         sp      Stack pointer
-    ^: Sauvegardés lors de l'appel d'une subroutine
+  r0 :      zero                  zero    -
+  r1-r3 :   arguments | return    a0-a2   caller
+  r4    :   saved | frame pointer s0/fp   callee
+  r5-r9 :   saved registers       s1-s5   callee
+  r10-13 :  temporary             t0-t3   caller
+  r14 :     return address        ra      caller
+  r15 :     stack pointer         sp      callee
 
 Spéciaux :
-  s0 :      flags                 fl      Contient (LSB->MSB) : zero_status, lt, lt_u, carry
-  s1 :      accumulator           acc     Contient la seconde sortie de l'ALU si il y en a une
-  s2 :      instruction pointer   ip      Pointe vers l'instruction actuelle
-  s3 :      memory split          ms      Indique l'adresse mémoire qui sépare la mémoire d'instruction et celle des données.
-  s4 :      bank select           bs      Choisis la bank mémoire
+  x0 :      flags                 fl      Contient (LSB->MSB) : zero_status, lt, lt_u, carry
+  x1 :      accumulator           acc     Contient la seconde sortie de l'ALU si il y en a une
+  x2 :      instruction pointer   ip      Pointe vers l'instruction actuelle
+  x3 :      memory split          ms      Indique l'adresse mémoire qui sépare la mémoire d'instruction et celle des données.
+  x4 :      bank select           bs      Choisis la bank mémoire
 
 Memory bank :
   x0 :      video memory
