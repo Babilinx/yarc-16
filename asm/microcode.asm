@@ -9,6 +9,8 @@ DATA_ADDR = UCODE_START_ADDR
 BSS_ADDR = DATA_SIZE + DATA_ADDR
 TEXT_ADDR = BSS_SIZE + BSS_ADDR
 
+_start = 0x400
+
 #bankdef data
 {
     #addr DATA_ADDR
@@ -20,14 +22,14 @@ TEXT_ADDR = BSS_SIZE + BSS_ADDR
 {
     #addr BSS_ADDR
     #size BSS_SIZE
-    #outp (DATA_SIZE + BSS_SIZE)*8
+    #outp (DATA_SIZE)*8
 }
 
 #bankdef text
 {
     #addr TEXT_ADDR
     #size TEXT_SIZE
-    #outp (DATA_SIZE + BSS_SIZE + TEXT_SIZE)*8
+    #outp (DATA_SIZE + BSS_SIZE)*8
 }
 
 _boot:
@@ -50,8 +52,8 @@ _boot:
     xor r14, r14
     xor r15, r15
 
-    ldi sp, 0xFFFD
+    li sp, 0xFFFD
     mov fp, sp
 
-    jmp _start
+    br _start
 
