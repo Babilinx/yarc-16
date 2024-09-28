@@ -36,8 +36,8 @@ GP :
   r6-r10 :  saved registers^      s0-s4   Registres sauvegardés
   r11-12 :  temporary             t0-t1   Valeurs temporaires ; utilisés par les pseudos-instructions
   r13 :     return address^       ra      Addresse de retour lors de l'appel d'une subroutine
-  r14 :     frame pointer         fp      Stack pointer
-  r15 :     stack pointer         sp      Return stack pointer
+  r14 :     frame pointer         fp      Frame pointer
+  r15 :     stack pointer         sp      Stack pointer
     ^: Sauvegardés lors de l'appel d'une subroutine
 
 Spéciaux :
@@ -104,8 +104,8 @@ xA ;  BR    imm(rs1)         ; B ; pc ← rs1 + imm               ; b[im8:5][rs1
 xB ;  BLT   imm(rs1)         ; B ; if lt: pc ← rs1 + imm        ; b[im8:5][rs1][im4:0]1011
 xC ;  BLU   imm(rs1)         ; B ; if lt_u: pc ← rs1 + imm      ; b[im8:5][rs1][im4:0]1100
 xD ;  BNZ   imm(rs1)         ; B ; if !zf: pc ← rs1 + imm       ; b[im8:5][rs1][im4:0]1101
-xE ;  JMP   imm(rs1)         ; B ; pc ← pc + imm                ; b[im8:5][zero][im4:0]1110
-xF ;  JLR   imm(rs1)         ; B ; ra ← pc + 2, pc ← pc + imm   ; b[im8:5][zero][im4:0]1111
+xE ;  JMP   imm              ; B ; pc ← pc + imm                ; b[im8:5][zero][im4:0]1110
+xF ;  JLR   imm              ; B ; ra ← pc + 2, pc ← pc + imm   ; b[im8:5][zero][im4:0]1111
 
 Non utilisé : x9
 
