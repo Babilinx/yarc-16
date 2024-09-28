@@ -116,17 +116,3 @@
     }
 }
 
-#bankdef microcode
-{
-	#addr 0x0000
-	#addr_end 0x400
-	#outp 0
-}
-
-#bankdef memory
-{
-	#addr 0x400
-	#addr_end 0x9A00
-	#outp 8*0x400
-}
-
