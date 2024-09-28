@@ -96,6 +96,7 @@
     lsh {rs1: reg}, {imm: u4}  => rs2 @ rs1 @ 0x9 @ 0x1
     rsh {rs1: reg}, {imm: u4}  => rs2 @ rs1 @ 0xA @ 0x1
     cmp {rs1: reg}, {imm: u4}  => rs2 @ rs1 @ 0xF @ 0x1
+    
 }
 
 #ruledef
@@ -114,5 +115,7 @@
         sw 0(sp), {rs1}
         addi sp, 2
     }
+    
+    nop => 0x0000
 }
 
