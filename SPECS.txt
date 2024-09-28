@@ -95,13 +95,14 @@ x1[x9] ;  LSHI  rs1, imm4    ; O ; rs1 ← rs1 << imm4   ; b[imm4][rs1]1001|0001
 x1[xA] ;  RSHI  rs1, imm4    ; O ; rs1 ← rs1 >> imm4   ; b[imm4][rs1]1010|0001
 x1[xF] ;  CMPI  rs1, imm4    ; O ; reload flags only   ; b[imm4][rs1]1111|0001
 
-Branchage :
-xA ;  BR    imm(rs1)         ; B ; pc ← rs1 + imm               ; b[im8:5][rs1][im4:0]1010
-xB ;  BLT   imm(rs1)         ; B ; if lt: pc ← rs1 + imm        ; b[im8:5][rs1][im4:0]1011
-xC ;  BLU   imm(rs1)         ; B ; if lt_u: pc ← rs1 + imm      ; b[im8:5][rs1][im4:0]1100
-xD ;  BNZ   imm(rs1)         ; B ; if !zf: pc ← rs1 + imm       ; b[im8:5][rs1][im4:0]1101
-xE ;  JMP   imm              ; B ; pc ← pc + imm                ; b[im8:5][zero][im4:0]1110
-xF ;  JLR   imm              ; B ; ra ← pc + 2, pc ← pc + imm   ; b[im8:5][zero][im4:0]1111
+Branching :
+Note: As we are 2 bytes aligned, we ignore the first LSB to double the jump abilities. 
+xA ;  BR    imm(rs1)         ; B ; pc ← rs1 + imm               ; b[im8:5][rs1][im4:1]1010
+xB ;  BLT   imm(rs1)         ; B ; if lt: pc ← rs1 + imm        ; b[im8:5][rs1][im4:1]1011
+xC ;  BLU   imm(rs1)         ; B ; if lt_u: pc ← rs1 + imm      ; b[im8:5][rs1][im4:1]1100
+xD ;  BNZ   imm(rs1)         ; B ; if !zf: pc ← rs1 + imm       ; b[im8:5][rs1][im4:1]1101
+xE ;  JMP   imm              ; B ; pc ← pc + imm                ; b[im8:5][zero][im4:1]1110
+xF ;  JLR   imm              ; B ; ra ← pc + 2, pc ← pc + imm   ; b[im8:5][zero][im4:1]1111
 
 Non utilisé : x8, x9
 

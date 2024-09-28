@@ -74,12 +74,12 @@
     mov {rd: reg}, {rs1: reg} => 0x0 @ rs1 @ rd @ 0x3
     
     ; branching
-    br  {imm: s8}({rs1: reg}) => imm[7:4] @ rs1 @ imm[3:0] @ 0xA
-    blt {imm: s8}({rs1: reg}) => imm[7:4] @ rs1 @ imm[3:0] @ 0xB
-    blu {imm: s8}({rs1: reg}) => imm[7:4] @ rs1 @ imm[3:0] @ 0xC
-    bnz {imm: s8}({rs1: reg}) => imm[7:4] @ rs1 @ imm[3:0] @ 0xD
-    jmp {imm: s8}({rs1: reg}) => imm[7:4] @ rs1 @ imm[3:0] @ 0xE
-    jlr {imm: s8}({rs1: reg}) => imm[7:4] @ rs1 @ imm[3:0] @ 0xF
+    br  {imm: s9}({rs1: reg}) => imm[8:5] @ rs1 @ imm[4:1] @ 0xA
+    blt {imm: s9}({rs1: reg}) => imm[8:5] @ rs1 @ imm[4:1] @ 0xB
+    blu {imm: s9}({rs1: reg}) => imm[8:5] @ rs1 @ imm[4:1] @ 0xC
+    bnz {imm: s9}({rs1: reg}) => imm[8:5] @ rs1 @ imm[4:1] @ 0xD
+    jmp {imm: s9}             => imm[8:5] @ 0x0 @ imm[4:1] @ 0xE
+    jlr {rs1: reg}            => 0x0 @ rs1 @ 0x0 @ 0xF
 }
 
 #ruledef
@@ -98,6 +98,67 @@
     rsh {rs1: reg}, {imm: u4}  => rs2 @ rs1 @ 0xA @ 0x1
     cmp {rs1: reg}, {imm: u4}  => rs2 @ rs1 @ 0xF @ 0x1
     
+    ; branching
+    br {imm: u16} =>
+    {
+        reladdr = {imm} - $ - 2
+        ; Using 'jmp' in this case saves 12 bytes of memory
+        assert(reladdr >=  0xff, "Immediate too small. Use 'jmp'")
+        assert(reladdr >= !0xff, "Immediate too small. Use 'jmp'")
+        asm
+        {
+            li t3, {imm}
+            br 0(t3)
+        } 
+    }
+    blt {imm: u16} =>
+    {
+        reladdr = imm - $ - 2
+        assert(reladdr <=  0xff)
+        assert(reladdr >= !0xff)
+        asm {blt ({imm} - $ - 2)`9(zero)}
+    }
+    blt {imm: u16} => asm
+    {
+        li t3, {imm}
+        blt 0(t3)
+    }
+    blu {imm: u16} =>
+    {
+        reladdr = imm - $ - 2
+        assert(reladdr <=  0xff)
+        assert(reladdr >= !0xff)
+        asm {blu ({imm} - $ - 2)`9(zero)}
+    }
+    blu {imm: u16} => asm
+    {
+        li t3, {imm}
+        blu 0(t3)
+    }
+    bnz {imm: u16} =>
+    {
+        reladdr = imm - $ - 2
+        assert(reladdr <=  0xff)
+        assert(reladdr >= !0xff)
+        asm {bnz ({imm} - $ - 2)`9(zero)}
+    }
+    bnz {imm: u16} => asm
+    {
+        li t3, {imm}
+        bnz 0(t3)
+    }
+    jlr {imm: u16} => asm
+    {
+        li t3, {imm}
+        jlr t3
+    }
+    jmp {imm: u16} =>  ; only local jmp
+    {
+        reladdr = imm - $ - 2
+        assert(reladdr <=  0xff, "Immediate too big. Use 'br'")
+        assert(reladdr >= !0xff, "Immediate too bit. Use 'br'")
+        asm {jmp ({imm} - $ - 2)`9}
+    }
 }
 
 #ruledef
