@@ -84,7 +84,7 @@
 
 #ruledef
 {
-    ;; extension instructions
+    ;; pseudoinstructions
     ; ALU
     add {rs1: reg}, {imm: u4}  => imm @ rs1 @ 0x0 @ 0x1
     sub {rs1: reg}, {imm: u4}  => imm @ rs1 @ 0x1 @ 0x1
@@ -155,8 +155,8 @@
     jmp {imm: u16} =>  ; only local jmp
     {
         reladdr = imm - $ - 2
-        assert(reladdr <=  0xff, "Immediate too big. Use 'br'")
-        assert(reladdr >= !0xff, "Immediate too bit. Use 'br'")
+        assert(reladdr >=  0xff, "Immediate too big. Use 'br'")
+        assert(reladdr <= !0xff, "Immediate too bit. Use 'br'")
         asm {jmp ({imm} - $ - 2)`9}
     }
 }
