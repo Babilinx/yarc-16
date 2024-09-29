@@ -123,6 +123,11 @@
         li t3, {imm}
         blt 0(t3)
     }
+    blt {imm: u16}, {rs1: reg}, {rs2: reg} => asm
+    {
+        cmp {rs1}, {rs2}
+        blt {imm}
+    }
     blu {imm: u16} =>
     {
         reladdr = imm - $ - 2
@@ -135,6 +140,11 @@
         li t3, {imm}
         blu 0(t3)
     }
+    blu {imm: u16}, {rs1: reg}, {rs2: reg} => asm
+    {
+        cmp {rs1}, {rs2}
+        blu {imm}
+    }
     bnz {imm: u16} =>
     {
         reladdr = imm - $ - 2
@@ -142,10 +152,26 @@
         assert(reladdr >= !0xff)
         asm {bnz ({imm} - $ - 2)`9(zero)}
     }
+    
     bnz {imm: u16} => asm
     {
         li t3, {imm}
         bnz 0(t3)
+    }
+    bnz {imm: u16}, {rs1: reg} => asm
+    {
+        cmp {rs1}, zero
+        bnz {imm}
+    }
+    bgt {imm: u16}, {rs1: reg}, {rs2: reg} => asm
+    {
+        cmp {rs2}, {rs1}
+        blt {imm}
+    }
+    bgu {imm: u16}, {rs1: reg}, {rs2: reg} => asm
+    {
+        cmp {rs2}, {rs1}
+        blu {imm}
     }
     jlr {imm: u16} => asm
     {
