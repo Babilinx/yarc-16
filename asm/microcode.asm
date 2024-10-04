@@ -2,39 +2,64 @@
 
 UCODE_SIZE = 0x400
 UCODE_START_ADDR = 0x0
+ZERODATA_SIZE = 0xF
 DATA_SIZE = 0x0
 BSS_SIZE = 0x0
-TEXT_SIZE = UCODE_SIZE - DATA_SIZE - BSS_SIZE
-DATA_ADDR = UCODE_START_ADDR
+TEXT_SIZE = UCODE_SIZE - ZERODATA_SIZE - DATA_SIZE - BSS_SIZE
+ZERODATA_ADDR = UCODE_START_ADDR
+DATA_ADDR = ZERODATA_SIZE + ZERODATA_SIZE
 BSS_ADDR = DATA_SIZE + DATA_ADDR
 TEXT_ADDR = BSS_SIZE + BSS_ADDR
 
 _start = 0x400
 
+#bankdef zerodata
+{
+    #addr ZERODATA_ADDR
+    #size ZERODATA_SIZE
+    #outp 0
+}
+
 #bankdef data
 {
     #addr DATA_ADDR
     #size DATA_SIZE
-    #outp 0
+    #outp (ZERODATA_SIZE)*8
 }
 
 #bankdef bss
 {
     #addr BSS_ADDR
     #size BSS_SIZE
-    #outp (DATA_SIZE)*8
+    #outp (ZERODATA_SIZE + DATA_SIZE)*8
 }
 
 #bankdef text
 {
     #addr TEXT_ADDR
     #size TEXT_SIZE
-    #outp (DATA_SIZE + BSS_SIZE)*8
+    #outp (ZERODATA_SIZE + DATA_SIZE + BSS_SIZE)*8
 }
 
+#bank zerodata
+
+video_addr:
+    #d16 0xA000
+
+_reset:
+    jmp _boot
+
+stack_top:
+    #d16 0xFFFF
+
+stack_bottom:
+    #d16 0xF000
+
+memory_top:
+    #d16 0x99FF
+
+#bank text
 _boot:
-    ; execution starts at 2
-    nop
 
     xor r1, r1
     xor r2, r2
